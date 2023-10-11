@@ -27,7 +27,7 @@ module ActiveGraph
 
             source_line, line_number = Logging.first_external_path_and_line(caller_locations)
 
-            yield " #{ANSI::CYAN}#{query.context || 'CYPHER'}#{ANSI::CLEAR} #{cypher} #{params_string}" +
+            yield " #{ANSI::YELLOW}[#{ActiveGraph::Tenant.database}]#{ANSI::CLEAR} #{ANSI::CYAN}#{query.context || 'CYPHER'}#{ANSI::CLEAR} #{cypher} #{params_string}" +
               ("\n   ↳ #{source_line}:#{line_number}" if ActiveGraph::Config.fetch(:verbose_query_logs, false) && source_line).to_s
           end
         end

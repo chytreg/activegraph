@@ -9,36 +9,22 @@ module ActiveGraph
     include ActiveGraph::Core::Querable
     extend ActiveGraph::Core::Schema
 
+    DriverNotDefinedError = Class.new(StandardError)
+
     at_exit do
-      @driver&.close
+      ActiveGraph::Tenant.driver&.close
     end
 
     class << self
-      # private?
+
       def driver
-        (@driver ||= establish_driver).tap do |driver|
-          fail 'No driver defined!' if driver.nil?
-        end
-      end
-
-      def on_establish_driver(&block)
-        @establish_driver_block = block
-      end
-
-      def establish_driver
-        @establish_driver_block.call if @establish_driver_block
+        ActiveGraph::Tenant.driver || fail(DriverNotDefinedError.new("Neo4j driver not defined, assign ActiveGraph::Tenant.tenant_id"))
       end
 
       def query(*args)
         transaction(implicit: true) do
           super(*args)
         end
-      end
-
-      # Should support setting driver via config options
-      def driver=(driver)
-        @driver&.close
-        @driver = driver
       end
 
       def validating_transaction(&block)

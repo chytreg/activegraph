@@ -10,6 +10,7 @@ module ActiveGraph
 
     class_methods do
       def session(**session_config)
+        session_config.merge(database: ActiveGraph::Tenant.database)
         ActiveGraph::Base.driver.session(**session_config) do |session|
           self.explicit_session = session
           yield session
@@ -33,7 +34,7 @@ module ActiveGraph
       def send_transaction(method, **config, &block)
         return yield tx if tx&.open?
         return run_transaction_work(explicit_session, method, **config, &block) if explicit_session&.open?
-        driver.session do |session|
+        driver.session(database: ActiveGraph::Tenant.database) do |session|
           run_transaction_work(session, method, **config, &block)
         end
       end
